@@ -1,0 +1,87 @@
+syntax = "proto3";
+
+package plugin;
+
+option go_package = "pkg.blksails.net/plugin/proto";
+
+import "google/protobuf/timestamp.proto";
+
+// ABLink 定义
+message ABLink {
+    string id = 1;
+    string name = 2;
+    string back_source = 3;
+    string review_url = 4;
+    repeated string domains = 5;
+    repeated string alias = 6;
+    repeated string ro_urls = 7;
+    repeated string co_urls = 8;
+    repeated string re_urls = 9;
+    repeated string tags = 10;
+    repeated string comp_ids = 11;
+    repeated string white_comp_ids = 12;
+    bool review = 13;
+    bool white_comp = 14;
+    int32 prepare_domain_size = 15;
+    string mode = 16;
+    string recent_pick_domain = 17;
+    string jump_mode = 18;
+    string scope = 19;
+    string scope_name = 20;
+    string protect_code = 21;
+    string protect_code_js = 22;
+    string install_js = 23;
+    bool install_checked = 24;
+    double percentile = 25;
+    double percentile_rate = 26;
+    string domain_factory = 27;
+    int32 domain_threshold = 28;
+    int32 block_threshold = 29;
+    bool disable_injectjs = 30;
+    bool disable_review = 31;
+    map<string, string> domain_factory_config = 32;
+    repeated string email_to = 33;
+    repeated string links = 34;
+    repeated string ip_cities = 35;
+    repeated string isp_blocks = 36;
+    bool reverse_city = 37;
+    bool disable = 38;
+    google.protobuf.Timestamp created_at = 39;
+    google.protobuf.Timestamp updated_at = 40;
+    google.protobuf.Timestamp refresh_at = 41;
+}
+
+// Plugin RPC 服务定义
+service PluginService {
+    rpc Start(StartRequest) returns (StartResponse);
+    rpc Stop(StopRequest) returns (StopResponse);
+    rpc Install(InstallRequest) returns (InstallResponse);
+    rpc Enter(EnterRequest) returns (EnterResponse);
+}
+
+message StartRequest {
+    map<string, string> config = 1;
+}
+
+message StartResponse {}
+
+message StopRequest {}
+
+message StopResponse {}
+
+message InstallRequest {
+    string link_id = 1;
+}
+
+message InstallResponse {
+    repeated string scripts = 1;
+}
+
+message EnterRequest {
+    string session_id = 1;
+    string link_id = 2;
+}
+
+message EnterResponse {
+    bool allowed = 1;
+} 
