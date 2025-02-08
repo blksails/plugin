@@ -72,6 +72,7 @@ type PluginInfo struct {
 	Author      string
 	Email       string
 	Url         string
+	SchemaURI   string
 	Status      PluginStatus
 }
 
