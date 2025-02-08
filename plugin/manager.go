@@ -14,8 +14,9 @@ import (
 
 type Manager struct {
 	sync.RWMutex
-	plugins map[string]*plugin.Client
-	logger  hclog.Logger
+	plugins     map[string]*plugin.Client
+	logger      hclog.Logger
+	pluginCache map[string]bplugin.PluginInfo
 }
 
 func NewManager(logger hclog.Logger) *Manager {
@@ -28,8 +29,9 @@ func NewManager(logger hclog.Logger) *Manager {
 	}
 
 	return &Manager{
-		plugins: make(map[string]*plugin.Client),
-		logger:  logger,
+		plugins:     make(map[string]*plugin.Client),
+		logger:      logger,
+		pluginCache: make(map[string]bplugin.PluginInfo),
 	}
 }
 
@@ -100,7 +102,53 @@ func (m *Manager) CloseAll() {
 	m.Lock()
 	defer m.Unlock()
 
+	// Clear cache
+	m.pluginCache = make(map[string]bplugin.PluginInfo)
+
 	for _, client := range m.plugins {
 		client.Kill()
 	}
+}
+
+// Plugins
+
+// Plugins returns a list of all loaded plugins
+func (m *Manager) Plugins() []bplugin.PluginInfo {
+	m.RLock()
+	defer m.RUnlock()
+
+	plugins := make([]bplugin.PluginInfo, 0, len(m.plugins))
+	for name, client := range m.plugins {
+		// Try to get from cache first
+		if cached, ok := m.pluginCache[name]; ok {
+			plugins = append(plugins, cached)
+			continue
+		}
+
+		// If not in cache, get new instance
+		rpcClient, err := client.Client()
+		if err != nil {
+			m.logger.Error("failed to get plugin client", "name", name, "error", err)
+			continue
+		}
+
+		raw, err := rpcClient.Dispense("ablink")
+		if err != nil {
+			m.logger.Error("failed to dispense plugin", "name", name, "error", err)
+			continue
+		}
+
+		if plugin, ok := raw.(bplugin.ABLinkPlugin); ok {
+
+			info, err := plugin.Start(nil)
+			if err != nil {
+				m.logger.Error("failed to start plugin", "name", name, "error", err)
+				continue
+			}
+
+			m.pluginCache[name] = info
+			plugins = append(plugins, info)
+		}
+	}
+	return plugins
 }

@@ -55,13 +55,24 @@ type ABLink struct {
 	RefreshAt           *timestamppb.Timestamp
 }
 
+type PluginStatus string
+
+const (
+	PluginStatusUnknown PluginStatus = "unknown"
+	PluginStatusRunning PluginStatus = "running"
+	PluginStatusStopped PluginStatus = "stopped"
+)
+
 type PluginInfo struct {
 	Name        string
 	Description string
 	Version     string
+	Type        string
+	Tags        []string
 	Author      string
 	Email       string
 	Url         string
+	Status      PluginStatus
 }
 
 type Plugin interface {
@@ -317,4 +328,5 @@ func init() {
 	gob.Register(&url.URL{})
 	gob.Register(&timestamppb.Timestamp{})
 	gob.Register(&ABLink{})
+	gob.Register(new(PluginStatus))
 }

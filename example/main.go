@@ -48,4 +48,5 @@ func main() {
 		log.Fatal(err)
 	}
 	log.Printf("scripts: %+v", scripts)
+	select {}
 }

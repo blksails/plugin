@@ -93,5 +93,6 @@ func main() {
 		Test: test,
 	})
 
+	select {}
 	logger.Println("Example plugin quit")
 }
