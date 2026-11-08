@@ -85,8 +85,10 @@ type Plugin interface {
 type ABLinkPlugin interface {
 	Plugin
 
-	Install(ablink *ABLink) ([]string, error)             // 安装 JS
-	Enter(sessionId string, ablink *ABLink) (bool, error) // 进入链接
+	Install(ablink *ABLink) ([]string, error)              // 安装阶段
+	Load(ablink *ABLink) error                             // 加载时
+	Unload(ablink *ABLink) error                           // 卸载时
+	Detect(sessionId string, ablink *ABLink) (bool, error) // 进入链接
 }
 
 // HandshakeConfig 用于插件和宿主程序之间的握手配置
@@ -151,7 +153,7 @@ func (p *DefaultABLinkPlugin) Enter(args []interface{}, resp *bool) error {
 	if !ok {
 		return errors.New("invalid type ablink")
 	}
-	allowed, err := p.Impl.Enter(sessionId, ablink)
+	allowed, err := p.Impl.Detect(sessionId, ablink)
 	if err != nil {
 		return err
 	}
